@@ -1,7 +1,6 @@
 package algorithms;
 
-import java.util.ArrayList;
-
+import network.Network;
 import network.components.Node;
 import network.components.Path;
 
@@ -9,10 +8,22 @@ public abstract class Algorithm {
 
 	protected static final int UNDEFINED_DISTANCE = -1;
 	
-	public abstract Path getShortestPath(Node startNode, Node endNode, 
-			ArrayList<Node> allNodes);
+	public abstract Path getShortestPath(Network network);
 	
 	public abstract AlgorithmState performSingleStep(AlgorithmState priorState);
+	
+	public AlgorithmState performSteps(AlgorithmState initialState, int numSteps) {
+		
+		AlgorithmState newState = initialState;
+		for (int i = 0; i < numSteps; i++) {
+			
+			newState = performSingleStep(initialState);
+			
+		}
+		
+		return newState;
+		
+	}
 	
 	/**
 	 * Constructs a path from the startNode to the endNode by traversing

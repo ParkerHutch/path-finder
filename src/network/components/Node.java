@@ -4,6 +4,7 @@ import java.util.ArrayList;
 
 import javafx.geometry.Point2D;
 import javafx.scene.canvas.GraphicsContext;
+import javafx.scene.paint.Color;
 
 public abstract class Node extends Entity {
 
@@ -13,6 +14,8 @@ public abstract class Node extends Entity {
     
     private double centerX;
     private double centerY;
+    
+    private boolean wall = false;
 	
     private ArrayList<Connection> connections = new ArrayList<Connection>();
     
@@ -54,6 +57,21 @@ public abstract class Node extends Entity {
 		
 	}
 	
+	public boolean isWall() {
+		return wall;
+	}
+
+	public void setWall(boolean wall) {
+		this.wall = wall;
+		
+		if (wall) {
+			setInnerColor(Color.BLACK); // TODO getter?
+		} else {
+			setInnerColor(Color.GRAY);
+		}
+		setPredecessor(null); // TODO not sure if this interferes with other things
+	}
+
 	/**
 	 * Gets the Node that must be traversed immediately prior to this Node
 	 * on the way from a start Node to an end Node
@@ -139,7 +157,7 @@ public abstract class Node extends Entity {
 	/**
 	 * Adds a connection between this node and otherNode to this Node's list 
 	 * of connections, as well as the other Node's list of connections, if the
-	 * connection isn't already there.
+	 * connection doesn't already exist there.
 	 * @param otherNode the Node to add a connection to
 	 */
 	public void addConnectionTo(Node otherNode) {
@@ -151,6 +169,28 @@ public abstract class Node extends Entity {
 			if (!otherNode.isConnectedTo(this)) {
 				
 				otherNode.addConnectionTo(this);
+				
+			}
+		
+		} 
+
+	}
+	
+	/**
+	 * Adds a connection with a defined length between this node and otherNode 
+	 * to this Node's list of connections, as well as the other Node's list of 
+	 * connections, if the connection doesn't already exist there.
+	 * @param otherNode the Node to add a connection to
+	 */
+	public void addConnectionTo(Node otherNode, double length) {
+		
+		if (!isConnectedTo(otherNode)) {
+
+			getConnections().add(new Connection(this, otherNode, length));
+			
+			if (!otherNode.isConnectedTo(this)) {
+				
+				otherNode.addConnectionTo(this, length);
 				
 			}
 		

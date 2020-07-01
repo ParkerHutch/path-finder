@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 
 import javafx.geometry.Point2D;
+import javafx.scene.paint.Color;
 import network.components.Node;
 import network.components.WebNode;
 
@@ -20,9 +21,10 @@ public class WebNetwork extends Network {
 	private int numNodes;
 	
 	public WebNetwork(int numNodes, int connectionsPerNode, double nodeRadius, 
-			double minDistance,	double leftX, double topY, double width, double height) {
+			double minDistance,	Color defaultInnerColor, Color defaultOuterColor, 
+			double leftX, double topY, double width, double height) {
 		
-		super(leftX, topY, width, height);
+		super(defaultInnerColor, defaultOuterColor, leftX, topY, width, height);
 		
 		this.numNodes = numNodes;
 		this.connectionsPerNode = connectionsPerNode;
@@ -34,6 +36,8 @@ public class WebNetwork extends Network {
 		setNodeOffsets();
 		
 		connectNodes();
+		
+		clearColors();
 		
 	}
 	
@@ -151,6 +155,8 @@ public class WebNetwork extends Network {
 		ArrayList<Double> acceptableDistances = new ArrayList<Double>();
 		ArrayList<Node> neighbors = new ArrayList<Node>();
 		
+		// TODO I should be able to do this better - use a temporary shortestDistances
+		// array, where the indexes are node numbers, and the values are distances
 		for (int i = 0; i < numNeighbors; i++) {
 			
 			acceptableDistances.add(distances.get(i));

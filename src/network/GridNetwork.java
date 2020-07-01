@@ -1,5 +1,6 @@
 package network;
 
+import javafx.scene.paint.Color;
 import network.components.GridNode;
 import network.components.Node;
 
@@ -7,14 +8,23 @@ public class GridNetwork extends Network {
 
 	private double nodeApothem;
 	
-	public GridNetwork(double nodeApothem, double leftX, double topY, double width, 
-			double height) {
+	private boolean diagonalConnectionsAllowed = true;
+	
+	private static final double STRAIGHT_CONNECTION_LENGTH = 1;
+	private static final double DIAGONAL_CONNECTION_LENGTH = Math.sqrt(2);
+	
+	public GridNetwork(Color defaultInnerColor, Color defaultOuterColor, 
+			double nodeApothem, double leftX, double topY, double width, 
+			double height, boolean diagonalConnectionsAllowed) {
 		
-		super(leftX, topY, width, height);
-		
+		super(defaultInnerColor, defaultOuterColor, leftX, topY, width, height);
+
 		this.nodeApothem = nodeApothem;
+		this.diagonalConnectionsAllowed = diagonalConnectionsAllowed;
 		
 		placeNodes();
+		
+		clearColors();
 		
 	}
 	
@@ -24,6 +34,14 @@ public class GridNetwork extends Network {
 
 	public void setNodeApothem(double nodeApothem) {
 		this.nodeApothem = nodeApothem;
+	}
+
+	public boolean diagonalConnectionsAllowed() {
+		return diagonalConnectionsAllowed;
+	}
+
+	public void setDiagonalConnectionsAllowed(boolean diagonalConnectionsAllowed) {
+		this.diagonalConnectionsAllowed = diagonalConnectionsAllowed;
 	}
 
 	@Override
@@ -49,6 +67,7 @@ public class GridNetwork extends Network {
 				
 				getNodes().add(nodes[i][j]);
 				
+				
 				numNodesPlaced++;
 				
 			}
@@ -72,109 +91,67 @@ public class GridNetwork extends Network {
 				if (i > 0) {
 					
 					// Above connection
-					currentNode.addConnectionTo(nodes[i - 1][j]);
+					currentNode.addConnectionTo(nodes[i - 1][j], STRAIGHT_CONNECTION_LENGTH);
 					
 				}
 				
 				if (i < nodes.length - 1) {
 					
 					// Below connection
-					currentNode.addConnectionTo(nodes[i + 1][j]);
+					currentNode.addConnectionTo(nodes[i + 1][j], STRAIGHT_CONNECTION_LENGTH);
 					
 				}
 				
 				if (j > 0) {
 					
 					// Left connection
-					currentNode.addConnectionTo(nodes[i][j - 1]);
+					currentNode.addConnectionTo(nodes[i][j - 1], STRAIGHT_CONNECTION_LENGTH);
 					
 				}
 				
 				if (j < nodes[i].length - 1) {
 					// Right connection
-					currentNode.addConnectionTo(nodes[i][j + 1]);
+					currentNode.addConnectionTo(nodes[i][j + 1], STRAIGHT_CONNECTION_LENGTH);
 				}
 				
 				// Diagonal connections
-				if (i > 0) {
+				if (diagonalConnectionsAllowed()) {
 					
-					if (j > 0) {
-						
-						currentNode.addConnectionTo(nodes[i-1][j-1]);
-						
-						
+					if (i > 0) {
+
+						if (j > 0) {
+
+							currentNode.addConnectionTo(nodes[i - 1][j - 1], DIAGONAL_CONNECTION_LENGTH);
+
+						}
+
+						if (j < nodes[i].length - 1) {
+
+							currentNode.addConnectionTo(nodes[i - 1][j + 1], DIAGONAL_CONNECTION_LENGTH);
+
+						}
+
 					}
-					
-					if (j < nodes[i].length - 1) {
-						
-						currentNode.addConnectionTo(nodes[i-1][j+1]);
-						
+
+					if (i < nodes.length - 1) {
+
+						if (j > 0) {
+
+							currentNode.addConnectionTo(nodes[i + 1][j - 1], DIAGONAL_CONNECTION_LENGTH);
+
+						}
+
+						if (j < nodes[i].length - 1) {
+
+							currentNode.addConnectionTo(nodes[i + 1][j + 1], DIAGONAL_CONNECTION_LENGTH);
+
+						}
 					}
-					
+
 				}
-				
-				if (i < nodes.length - 1) {
-					
-					if (j > 0) {
-						
-						currentNode.addConnectionTo(nodes[i+1][j-1]);
-						
-					}
-					
-					if (j < nodes[i].length - 1) {
-						
-						currentNode.addConnectionTo(nodes[i+1][j+1]);
-						
-					}
-				}
-				
-				
 			}
 
 		}
-		
-		// Special cases
-		/*
-		Node topLeftNode = nodes[0][0];
-		topLeftNode.addConnectionTo(nodes[1][0]);
-		topLeftNode.addConnectionTo(nodes[0][1]);
-		Node topRightNode = nodes[0][nodes[0].length - 1];
-		topRightNode.addConnectionTo(nodes[1][nodes[0].length - 1]);
-		topRightNode.addConnectionTo(nodes[0][nodes[0].length - 2]);
-		Node bottomLeftNode = nodes[nodes.length - 1][0];
-		bottomLeftNode.addConnectionTo(nodes[nodes.length - 2][0]);
-		bottomLeftNode.addConnectionTo(nodes[nodes.length - 1][1]);
-		Node bottomRightNode = nodes[nodes.length - 1][nodes[0].length - 1];
-		bottomRightNode.addConnectionTo(nodes[nodes.length - 2][nodes[0].length - 1]);
-		bottomRightNode.addConnectionTo(nodes[nodes.length - 1][nodes[0].length - 2]);
-		
-		
-		*/
-		
-		
-		
-		/*
-		for (int i = 0; i < getNodes().size(); i++) {
-			
-			Node currentNode = getNodes().get(i);
-			
-			// Check for left node
-			if (i > 0 && getNodes().get(i - 1).getCenterX() < currentNode.getCenterX()) {
-				
-				// found a node on the left of the currentNode
-				currentNode.addConnectionTo(getNodes().get(i - 1));
-				
-			}
-			
-			// Check for right node
-			if (i < getNodes().size() - 1 && getNodes().get(i + 1).getCenterX() > currentNode.getCenterX()) {
-				
-				// found a node on the right of the currentnode
-				currentNode.addConnectionTo(getNodes().get(i + 1));
-				
-			}
-			
-		}*/
 		
 	}
 

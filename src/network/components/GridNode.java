@@ -94,6 +94,7 @@ public class GridNode extends Node {
 		gc.setStroke(getOuterColor());
 		gc.strokeRect(getCenterX() - getApothem(), getCenterY() - getApothem(), 
 				getApothem() * 2, getApothem() * 2);
+				
 		
 		//drawNumber(gc);
 	}

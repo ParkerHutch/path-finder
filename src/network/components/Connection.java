@@ -10,9 +10,17 @@ public class Connection extends Entity {
 	private Node startNode;
 	private Node endNode;
 	
+	private double length = -1; 
+	
 	public Connection(Node startNode, Node endNode) {
 		this.startNode = startNode;
 		this.endNode = endNode;
+	}
+	
+	public Connection(Node startNode, Node endNode, double length) {
+		this.startNode = startNode;
+		this.endNode = endNode;
+		this.length = length;
 	}
 
 	public Node getStartNode() {
@@ -51,12 +59,22 @@ public class Connection extends Entity {
 	}
 	
 	public double getLength() {
-		
+
+		if (this.length == -1) {
 			return Math.hypot(endNode.getCenterX() - startNode.getCenterX(),
 					endNode.getCenterY() - startNode.getCenterY());
+		} else {
+			
+			return length;
+			
+		}
 		
 	}
 	
+	public void setLength(double length) {
+		this.length = length;
+	}
+
 	public Point2D getMidpoint() {
 		
 		double midX = (getStartNode().getCenterX() + getEndNode().getCenterX()) / 2;

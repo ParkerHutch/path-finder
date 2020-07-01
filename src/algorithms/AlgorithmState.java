@@ -2,6 +2,7 @@ package algorithms;
 
 import java.util.ArrayList;
 
+import javafx.scene.paint.Color;
 import network.Network;
 import network.components.Node;
 import network.components.Path;
@@ -15,9 +16,12 @@ public class AlgorithmState {
 	private Node startNode;
 	private Node endNode;
 	
-	boolean pathFound = false;
+	boolean pathFound = false; // TODO Rename to searchComplete, since this could be true in the case
+	// of no path to the end node existing?
 	Path path;
 	
+	// shortestDistances contains the shortest distance to each node, where
+	// each node's number is its index in the array
 	private double [] shortestDistances;
 	
 	private int iteration = 0;
@@ -28,15 +32,19 @@ public class AlgorithmState {
 	 * The lists for visited and unvisited nodes are initialized to empty 
 	 * lists (this would be useful for the initial state of an algorithm).
 	 * @param network the Network containing the start and end nodes
-	 * @param startNode one of the nodes to be connected by a Path
-	 * @param endNode one of the nodes to be connected by a Path
 	 */
-	public AlgorithmState(Network network, Node startNode, Node endNode) {
+	public AlgorithmState(Network network) {
 		this.network = network;
-		this.startNode = startNode;
-		this.endNode = endNode;
+		this.startNode = network.getStartNode();
+		this.endNode = network.getEndNode();
 		this.visitedNodes = new ArrayList<Node>();
 		this.unvisitedNodes = new ArrayList<Node>();
+
+		this.shortestDistances = getUndefinedDistancesArray(network.getNodes().size());
+		this.shortestDistances[network.getStartNode().getNumber()] = 0;
+		this.unvisitedNodes.add(network.getStartNode());
+		this.path = null;
+		
 	}
 	
 	
@@ -61,6 +69,15 @@ public class AlgorithmState {
 		this.unvisitedNodes = unvisitedNodes;
 		this.startNode = startNode;
 		this.endNode = endNode;
+		
+		if (shortestDistances == null) {
+			
+			// shortestDistances contains the shortest distance to each node, where
+			// each node's number is its index in the array
+			this.shortestDistances = getUndefinedDistancesArray(network.getNodes().size());
+			this.shortestDistances[network.getStartNode().getNumber()] = 0;
+			
+		}
 	}
 
 	public Network getNetwork() {
@@ -94,11 +111,9 @@ public class AlgorithmState {
 		this.endNode = endNode;
 	}
 
-
 	public double[] getShortestDistances() {
 		return shortestDistances;
 	}
-
 
 	public void setShortestDistances(double[] shortestDistances) {
 		this.shortestDistances = shortestDistances;
@@ -109,11 +124,9 @@ public class AlgorithmState {
 		return pathFound;
 	}
 
-
 	public void setPathFound(boolean pathFound) {
 		this.pathFound = pathFound;
 	}
-
 
 	public Path getPath() {
 		return path;
@@ -134,5 +147,31 @@ public class AlgorithmState {
 		this.iteration = iteration;
 	}
 	
+	public double [] getUndefinedDistancesArray(int size) {
+		
+		double[] arr = new double[size];
+
+		for (int i = 0; i < arr.length; i++) {
+
+			arr[i] = Algorithm.UNDEFINED_DISTANCE;
+
+		}
+		
+		return arr;
+		
+	}
 	
+	public void colorVisitedNodes(Color visitedNodeColor) {
+		
+		for (Node node : getVisitedNodes()) {
+			if (getNetwork().getStartNode() != null && getNetwork().getEndNode() != null
+					&& node != getNetwork().getStartNode() && node != getNetwork().getEndNode()
+					&& !node.isWall()) {
+
+				node.setInnerColor(visitedNodeColor);
+				
+			}
+		}
+		
+	}
 }

@@ -23,22 +23,87 @@ public abstract class Network {
 	private Node endNode;
 	private Path path;
 	
-	private Color startNodeColor = Color.BLUE;
-	private Color endNodeColor = Color.RED;
-	private Color pathNodeColor = Color.GREEN;
+	private Color startNodeOuterColor = Color.BLUE;
+	private Color startNodeInnerColor = Color.WHITE;
+	private Color endNodeOuterColor = Color.RED;
+	private Color endNodeInnerColor = Color.WHITE;
+	private Color pathNodeColor = Color.YELLOW;
 	private Color pathConnectionColor = Color.YELLOW;
+	private Color wallInnerColor = Color.BLACK;
+	private Color wallOuterColor = Color.BLACK;
+	
+	private Color defaultNodeInnerColor = Color.WHITE;
+	private Color defaultNodeOuterColor = Color.BLACK;
 	
 	static final int MAXNODEPLACEATTEMPTS = 20;
 	
-	public Network(double leftX, double topY, double width, double height) {
+	public Network(Color defaultInnerColor, Color defaultOuterColor, 
+			double leftX, double topY, double width, double height) {
 		
+		this.defaultNodeInnerColor = defaultInnerColor;
+		this.defaultNodeOuterColor = defaultOuterColor;
 		this.leftX = leftX;
 		this.topY = topY;
 		this.width = width;
 		this.height = height;
 		
+		this.startNode = null;
+		this.endNode = null;
+		
 	}
 	
+	public Color getStartNodeOuterColor() {
+		return startNodeOuterColor;
+	}
+
+	public void setStartNodeOuterColor(Color startNodeOuterColor) {
+		this.startNodeOuterColor = startNodeOuterColor;
+	}
+
+	public Color getStartNodeInnerColor() {
+		return startNodeInnerColor;
+	}
+
+	public void setStartNodeInnerColor(Color startNodeInnerColor) {
+		this.startNodeInnerColor = startNodeInnerColor;
+	}
+
+	public Color getEndNodeOuterColor() {
+		return endNodeOuterColor;
+	}
+
+	public void setEndNodeOuterColor(Color endNodeOuterColor) {
+		this.endNodeOuterColor = endNodeOuterColor;
+	}
+
+	public Color getEndNodeInnerColor() {
+		return endNodeInnerColor;
+	}
+
+	public void setEndNodeInnerColor(Color endNodeInnerColor) {
+		this.endNodeInnerColor = endNodeInnerColor;
+	}
+
+	public Color getPathNodeColor() {
+		return pathNodeColor;
+	}
+
+	public Color getWallInnerColor() {
+		return wallInnerColor;
+	}
+
+	public void setWallInnerColor(Color wallInnerColor) {
+		this.wallInnerColor = wallInnerColor;
+	}
+
+	public Color getWallOuterColor() {
+		return wallOuterColor;
+	}
+
+	public void setWallOuterColor(Color wallOuterColor) {
+		this.wallOuterColor = wallOuterColor;
+	}
+
 	public double getLeftX() {
 		return leftX;
 	}
@@ -87,13 +152,18 @@ public abstract class Network {
 	public void setEndNode(Node endNode) {
 		
 		this.endNode = endNode;
-		endNode.setOuterColor(getEndNodeColor());
+		endNode.setInnerColor(getEndNodeInnerColor());
+		endNode.setOuterColor(getEndNodeOuterColor());
+		clearColors();
+		
 	}
 	
 	public void setStartNode(Node startNode) {
 
 		this.startNode = startNode;
-		startNode.setOuterColor(getStartNodeColor());
+		startNode.setInnerColor(getStartNodeInnerColor());
+		startNode.setOuterColor(getStartNodeOuterColor());
+		clearColors();
 		
 	}
 	
@@ -103,26 +173,6 @@ public abstract class Network {
 
 	public void setPath(Path path) {
 		this.path = path;
-	}
-
-	public Color getStartNodeColor() {
-		return startNodeColor;
-	}
-	
-	public void setStartNodeColor(Color startNodeColor) {
-		this.startNodeColor = startNodeColor;
-	}
-	
-	public Color getEndNodeColor() {
-		return endNodeColor;
-	}
-	
-	public void setEndNodeColor(Color endNodeColor) {
-		this.endNodeColor = endNodeColor;
-	}
-	
-	public Color getPathNodeColor() {
-		return pathNodeColor;
 	}
 
 	public void setPathNodeColor(Color pathNodeColor) {
@@ -135,6 +185,22 @@ public abstract class Network {
 
 	public void setPathConnectionColor(Color pathConnectionColor) {
 		this.pathConnectionColor = pathConnectionColor;
+	}
+
+	public Color getDefaultNodeInnerColor() {
+		return defaultNodeInnerColor;
+	}
+
+	public void setDefaultNodeInnerColor(Color defaultNodeInnerColor) {
+		this.defaultNodeInnerColor = defaultNodeInnerColor;
+	}
+
+	public Color getDefaultNodeOuterColor() {
+		return defaultNodeOuterColor;
+	}
+
+	public void setDefaultNodeOuterColor(Color defaultNodeOuterColor) {
+		this.defaultNodeOuterColor = defaultNodeOuterColor;
 	}
 
 	/**
@@ -161,17 +227,20 @@ public abstract class Network {
 		
 		for (Node node : getNodes()) {
 
-			if (!(node.equals(startNode) || node.equals(endNode))) {
+			if (!(node.equals(startNode) || node.equals(endNode) || node.isWall())) {
 				
-				node.setOuterColor(Color.BLACK);
-				if (node.getClass() == GridNode.class) {
-					
-					node.setInnerColor(Color.WHITE);
-					
-				}
-
-			}
+				node.setInnerColor(getDefaultNodeInnerColor());
+				node.setOuterColor(getDefaultNodeOuterColor());
+				
+			} 
 			
+			if (node.isWall()) {
+				
+				node.setInnerColor(getWallInnerColor());
+				node.setOuterColor(getWallOuterColor());
+				
+			}
+
 			for (Connection connection : node.getConnections()) {
 
 				connection.setInnerColor(Color.BLACK);
@@ -189,11 +258,12 @@ public abstract class Network {
 	 * beginning with the start Node and terminating with the end Node
 	 */
 	private void colorPath(Path path) {
-		
-		clearColors();
-		
+
+		// TODO I think this gets called over and over again
+		// Try to find a way to make the colors only set once so that this loop doesn't
+		// need to be called over and over
 		if (path.getSequence().size() > 1) {
-			
+
 			Node currentNode;
 			Connection backConnection1;
 			Connection backConnection2;
@@ -208,17 +278,24 @@ public abstract class Network {
 				backConnection2.setInnerColor(getPathConnectionColor());
 
 				// Color all but the start and end nodes
-				if (i != path.getSequence().size() - 1) {
-					currentNode.setOuterColor(getPathNodeColor());
-					if (currentNode.getClass() == GridNode.class) {
-						
-						currentNode.setInnerColor(getPathNodeColor());
-						
-					}
-				}
+				if (i != path.getSequence().size() - 1 && !currentNode.isWall()) {
 
+					if (currentNode.getClass() == GridNode.class) {
+
+						currentNode.setInnerColor(getPathNodeColor());
+
+					} else {
+
+						currentNode.setOuterColor(getPathNodeColor());
+
+					}
+
+				}
+				
 			}
-		} 		
+
+		}
+				
 		
 	}
 	
@@ -255,10 +332,8 @@ public abstract class Network {
 			
 		}
 		
-		
-		
 		if (path != null) {
-			
+
 			colorPath(path);
 			
 			for (Node node : path.getSequence()) {
@@ -269,6 +344,7 @@ public abstract class Network {
 			
 		}
 		
+		// Make sure start/end nodes are drawn overtop of other nodes
 		if (getStartNode() != null) {
 			getStartNode().draw(gc);
 		}
@@ -276,8 +352,10 @@ public abstract class Network {
 			getEndNode().draw(gc);
 		}
 		
+		
 	}
 	
+	// TODO I should be able to remove the below two functions
 	/**
 	 * Checks if the coordinate pair given by <code>clickPoint</code> falls 
 	 * inside of a node, and selects that node as the start node if it does
@@ -332,6 +410,13 @@ public abstract class Network {
 			node.setCenterX(node.getCenterX() + getLeftX());
 			node.setCenterY(node.getCenterY() + getTopY());
 		}
+		
+	}
+	
+	// TODO use this more in the driver class
+	public boolean hasStartAndEndNodes() {
+		
+		return getStartNode() != null && getEndNode() != null;
 		
 	}
 
