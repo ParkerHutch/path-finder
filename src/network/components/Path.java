@@ -1,9 +1,9 @@
+package network.components;
 import java.util.ArrayList;
 
 public class Path {
 	
 	private ArrayList<Node> sequence = new ArrayList<Node>();
-	//private double length = 0;
 	
 	public Path() {}
 	

@@ -1,3 +1,5 @@
+package network.components;
+
 import javafx.geometry.Point2D;
 import javafx.scene.canvas.GraphicsContext;
 import javafx.scene.paint.Color;
@@ -31,7 +33,7 @@ public class Connection extends Entity {
 
 	public void draw(GraphicsContext gc) {
 		
-		gc.setStroke(getColor());
+		gc.setStroke(getInnerColor());
 		gc.setLineWidth(5);
 		gc.strokeLine(startNode.getCenterX(), startNode.getCenterY(), 
 				endNode.getCenterX(), endNode.getCenterY());
@@ -50,8 +52,8 @@ public class Connection extends Entity {
 	
 	public double getLength() {
 		
-		return Math.hypot(endNode.getCenterX() - startNode.getCenterX(), 
-				endNode.getCenterY() - startNode.getCenterY());
+			return Math.hypot(endNode.getCenterX() - startNode.getCenterX(),
+					endNode.getCenterY() - startNode.getCenterY());
 		
 	}
 	

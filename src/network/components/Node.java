@@ -1,21 +1,20 @@
+package network.components;
+
 import java.util.ArrayList;
 
+import javafx.geometry.Point2D;
 import javafx.scene.canvas.GraphicsContext;
-import javafx.scene.paint.Color;
-import javafx.scene.text.Font;
 
-public class Node extends Entity {
-	
+public abstract class Node extends Entity {
+
 	private int number = -1;
 	
 	private Node predecessor; // only initialized when searching
     
     private double centerX;
     private double centerY;
-    
-    private double radius = 20;
-    
-    ArrayList<Connection> connections = new ArrayList<Connection>();
+	
+    private ArrayList<Connection> connections = new ArrayList<Connection>();
     
     /**
      * Creates a numbered Node centered at (centerX, centerY) with a defined 
@@ -26,12 +25,11 @@ public class Node extends Entity {
      * @param centerY the center y-coordinate of the Node
      * @param radius the radius of the Node
      */
-    public Node(int number, double centerX, double centerY, double radius) {
+    public Node(int number, double centerX, double centerY) {
     	
     	this.number = number;
     	this.centerX = centerX;
     	this.centerY = centerY;
-    	this.radius = radius;
     	
     }
     
@@ -108,22 +106,6 @@ public class Node extends Entity {
 	}
 
 	/**
-	 * Gets the radius of the Node
-	 * @return the Node's radius
-	 */
-	public double getRadius() {
-		return radius;
-	}
-
-	/**
-	 * Sets the radius of the Node
-	 * @param radius the new radius
-	 */
-	public void setRadius(double radius) {
-		this.radius = radius;
-	}
-    
-	/**
 	 * Gets all of the Node's stored connections to other Nodes
 	 * @return the Node's connections
 	 */
@@ -139,32 +121,6 @@ public class Node extends Entity {
 	public void setConnections(ArrayList<Connection> connections) {
 		this.connections = connections;
 	}
-
-	/**
-	 * Draws the Node on a Canvas
-	 * @param gc the GraphicsContext for the Canvas to draw the Node on
-	 */
-	public void draw(GraphicsContext gc) {
-		
-		gc.setFill(getColor());
-		gc.fillOval(getCenterX() - getRadius(), getCenterY() - getRadius(), 
-				getRadius() * 2, getRadius() * 2);
-		
-		//drawNumber(gc);
-	}
-	
-	/**
-	 * Draws the Node's number near its center
-	 * @param gc the GraphicsContext for the Canvas to draw the number on
-	 */
-	public void drawNumber(GraphicsContext gc) {
-		
-		gc.setFill(Color.YELLOW);
-		gc.setFont(new Font(24));
-		gc.fillText(""+getNumber(), getCenterX() - 6, 
-				getCenterY() + getRadius() - 12);
-		
-	}
 	
 	/**
 	 * Draws all the Connection objects stored in this Node's connections list
@@ -179,7 +135,7 @@ public class Node extends Entity {
 		}
 		
 	}
-
+	
 	/**
 	 * Adds a connection between this node and otherNode to this Node's list 
 	 * of connections, as well as the other Node's list of connections, if the
@@ -271,6 +227,17 @@ public class Node extends Entity {
 		return connectedNodes;
 		
 	}
+	
+	/**
+	 * Checks if the Node's boundaries contain the two-dimensional point given.
+	 * @param point the test point
+	 * @return true if the Node's boundaries contain the point, false 
+	 * otherwise.
+	 */
+	public abstract boolean boundariesContainPoint(Point2D point);
+	
+	@Override
+	public abstract void draw(GraphicsContext gc);
 
 	@Override
 	public String toString() {
@@ -279,8 +246,5 @@ public class Node extends Entity {
 				+ (int)getCenterY() + ")";
 		
 	}
-	
-	
-	
-	
+    
 }

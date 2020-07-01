@@ -1,17 +1,32 @@
 import javafx.scene.*;
 import javafx.stage.Stage;
-import javafx.application.Application;
 
+import javafx.application.Application;
 import javafx.animation.AnimationTimer;
 import javafx.event.EventHandler;
 import javafx.geometry.Point2D;
 import javafx.scene.input.*;
-import javafx.scene.paint.Color;
 import javafx.scene.canvas.*;
+import network.GridNetwork;
+import network.Network;
+import network.WebNetwork;
+import network.components.Path;
+import algorithms.Algorithm;
+import algorithms.DjikstraShortestPath;
 
 // Start Date: 1/23/2020
 public class GraphicalShortestPath extends Application {
 
+	/*
+	 * TODO
+	 * - Draggable start/end nodes
+	 * 		- MouseHandler class?
+	 * - Menu screen with buttons to generate Grid/Web Networks & option for # of nodes
+	 * - Animated search (make a new class/package in algorithms)
+	 * - Maybe make Network extend the Entity class (which should store x/y offsets?)
+	 * - Better colors
+	 * - Setting for not allowing diagonal connections
+	 */
 	Scene gameScene;
 	Stage theStage;
 
@@ -29,11 +44,6 @@ public class GraphicalShortestPath extends Application {
 
 	GraphicsContext gc;
 
-	// Framerate Measuring
-	final long[] frameTimes = new long[100];
-	int frameTimeIterator = 0;
-	boolean frameTimesArrayFull = false;
-
 	Network network;
 	
 	
@@ -43,7 +53,9 @@ public class GraphicalShortestPath extends Application {
 
 	public void init() throws Exception {
 		
-		network = new Network(70, 2, 20, 10, WIDTH, HEIGHT);
+		network = new GridNetwork(15, 100, 100, WIDTH - 200, HEIGHT - 200);
+
+		//network = new WebNetwork(70, 2, 20, 10, WIDTH, HEIGHT);
 		
 	}
 
@@ -71,6 +83,7 @@ public class GraphicalShortestPath extends Application {
 		gc = canvas.getGraphicsContext2D();
 
 		animator = new AnimationTimer() {
+			
 			@Override
 			public void handle(long arg0) {
 
@@ -130,15 +143,12 @@ public class GraphicalShortestPath extends Application {
 				if (arg0.getButton() == MouseButton.PRIMARY) {
 					
 					getNetwork().selectStartNode(clickPoint);
-					network.path = null;
-					network.clearColors();
 
 				}
+				
 				if (arg0.getButton() == MouseButton.SECONDARY) {
 
 					getNetwork().selectEndNode(clickPoint);
-					network.path = null;
-					network.clearColors();
 
 				}
 			}
@@ -156,37 +166,33 @@ public class GraphicalShortestPath extends Application {
 			if (arg0.getEventType() == KeyEvent.KEY_PRESSED) {
 				String code = arg0.getCode().toString();
 				
-				if (code.equals("SPACE")) {
+				if (code.equals("W")) {
 					
-					// Generate new Network
-					network = new Network(30, 2, 20, 10, WIDTH, HEIGHT);
+					// Generate new WebNetwork
+					setNetwork(new WebNetwork(30, 2, 20, 10, 100, 100, WIDTH - 200, HEIGHT - 200));
+					
+					
+				} else if (code.equals("G")) {
+					
+					// Generate new GridNetwork
+					setNetwork(new GridNetwork(20, 0, 0, WIDTH, HEIGHT));
 					
 				} else if (code.equals("F")) {
 					
-					// Connect start and end nodes
-					
+					// Connect start and end nodes and set the path in the Network
 					if (network.getStartNode() != null && network.getEndNode() != null) {
 						
-						// TODO Don't use a class for this if possible
-						
-						/*
-						ShortestPath calculator = new ShortestPath(network.getNodes(), network.getStartNode(),
-								network.getEndNode());
-						Path path = calculator.getPathToNodeViaPredecessors(
-								network.getStartNode(), network.getEndNode());
-						*/
-						
-						Path path = StaticShortestPath.getShortestPath(
+						Algorithm pathFinder = new DjikstraShortestPath();
+						Path path = pathFinder.getShortestPath(
 								network.getStartNode(), network.getEndNode(), 
 								network.getNodes());
+						/*
+						Path path = DjikstraShortestPath.getShortestPath(
+								network.getStartNode(), network.getEndNode(), 
+								network.getNodes());
+								*/
 						
-						if (path.getSequence().size() == 1) {
-							
-							System.out.println("Path not found");
-							
-						}
-						
-						network.path = path;
+						network.setPath(path);
 						
 					}
 				}

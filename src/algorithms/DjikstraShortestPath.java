@@ -1,9 +1,14 @@
+package algorithms;
+
 import java.util.ArrayList;
 
-public class StaticShortestPath {
+import network.components.Node;
+import network.components.Path;
 
-	private static final int UNDEFINED_DISTANCE = -1;
-	
+public class DjikstraShortestPath extends Algorithm {
+
+	//private static final int UNDEFINED_DISTANCE = -1;
+
 	/**
 	 * Gets the shortest Path from the start node to the end node
 	 * @param startNode the node to begin the path from
@@ -12,7 +17,8 @@ public class StaticShortestPath {
 	 * end node
 	 * @return the shortest path from the start node to the end node
 	 */
-	public static Path getShortestPath(Node startNode, Node endNode, ArrayList<Node> allNodes) {
+	@Override
+	public Path getShortestPath(Node startNode, Node endNode, ArrayList<Node> allNodes) {
 		
 		for (Node node : allNodes) {
 			
@@ -20,9 +26,15 @@ public class StaticShortestPath {
 			
 		}
 		
-		assignNodePredecessors(startNode, endNode, allNodes);
+		performAlgorithm(startNode, endNode, allNodes);
 		
 		Path path = getPathToNodeViaPredecessors(startNode, endNode);
+		
+		if (path.getSequence().size() <= 1) {
+			
+			System.out.println("Path not found");
+			
+		}
 		
 		return path;
 		
@@ -38,7 +50,7 @@ public class StaticShortestPath {
 	 * @param allNodes all the nodes in the Network containing the start and
 	 * end Nodes
 	 */
-	private static void assignNodePredecessors(Node startNode, Node endNode, ArrayList<Node> allNodes) {
+	private static void performAlgorithm(Node startNode, Node endNode, ArrayList<Node> allNodes) {
 
 		/*
 		 * 
@@ -47,13 +59,13 @@ public class StaticShortestPath {
 		 * helpful
 		 * 
 		 */
-		
+
 		ArrayList<Node> unvisitedNodes = new ArrayList<Node>();
 		ArrayList<Node> visitedNodes = new ArrayList<Node>();
-		
+
 		// shortestDistances contains the shortest distance to each node, where
 		// each node's number is its index in the array
-		double[] shortestDistances = new double[allNodes.size()]; 
+		double[] shortestDistances = new double[allNodes.size()];
 
 		// Initialize all distances to undefined initially
 		for (int i = 0; i < shortestDistances.length; i++) {
@@ -65,29 +77,41 @@ public class StaticShortestPath {
 		unvisitedNodes.add(startNode);
 		shortestDistances[startNode.getNumber()] = 0;
 
-		while (!unvisitedNodes.isEmpty()) {
+		boolean endNodeNeighborsVisited = false;
 
+		// State currentState = new AlgorithmState(network, startNode, endNode);
+
+		while (!unvisitedNodes.isEmpty() && !endNodeNeighborsVisited) {
+
+			endNodeNeighborsVisited = true;
+			for (Node node : endNode.getConnectedNodes()) {
+
+				if (!visitedNodes.contains(node)) {
+
+					endNodeNeighborsVisited = false;
+
+				}
+
+			}
 			// Get the closest unvisited node
-			int smallestDistNodeNum = getUnvisitedNodeNumberWithLowestDistance(
-					shortestDistances, visitedNodes);
+			int smallestDistNodeNum = getUnvisitedNodeNumberWithLowestDistance(shortestDistances, visitedNodes);
 
 			if (smallestDistNodeNum != -1) {
-				
+
 				Node evaluationNode = allNodes.get(smallestDistNodeNum);
-				
+
 				unvisitedNodes.remove(evaluationNode);
-				//visitedNodes.add(evaluationNode); TODO Remove if everything is working
-				
-				// Search the nodes connected to the evaluationNode, 
+				// visitedNodes.add(evaluationNode); TODO Remove if everything is working
+
+				// Search the nodes connected to the evaluationNode,
 				// recalculating their distances(which are to be stored in
 				// shortestDistances) and added to unvisitedNodes
-				evaluateNeighbors(evaluationNode, shortestDistances,  
-						visitedNodes, unvisitedNodes);
-				
+				evaluateNeighbors(evaluationNode, shortestDistances, visitedNodes, unvisitedNodes);
+
 				visitedNodes.add(evaluationNode);
 
 			} else {
-				
+
 				// if smallestDistNodeNum is -1, stop searching
 				break;
 
@@ -97,6 +121,57 @@ public class StaticShortestPath {
 
 	}
 
+	private AlgorithmState doDjikstra(AlgorithmState state) {
+		
+		boolean endNodeNeighborsVisited = true;
+		for (Node node : state.getEndNode().getConnectedNodes()) {
+			
+			if (!state.getVisitedNodes().contains(node)) {
+				
+				endNodeNeighborsVisited = false;
+				
+			}
+			
+		}
+		// TODO this is new here
+		if (endNodeNeighborsVisited) {
+			
+			state.setPathFound(true);
+			return state;
+			
+		}
+		// Get the closest unvisited node
+		int smallestDistNodeNum = getUnvisitedNodeNumberWithLowestDistance(
+				state.getShortestDistances(), state.getVisitedNodes());
+
+		if (smallestDistNodeNum != -1) {
+			
+			Node evaluationNode = state.getNetwork().getNodes().get(smallestDistNodeNum);
+			
+			state.getUnvisitedNodes().remove(evaluationNode);
+			//visitedNodes.add(evaluationNode); TODO Remove if everything is working
+			
+			// Search the nodes connected to the evaluationNode, 
+			// recalculating their distances(which are to be stored in
+			// shortestDistances) and added to unvisitedNodes
+			evaluateNeighbors(evaluationNode, state.getShortestDistances(),  
+					state.getVisitedNodes(), state.getUnvisitedNodes());
+			
+			state.getVisitedNodes().add(evaluationNode);
+
+		} else {
+			
+			// if smallestDistNodeNum is -1, stop searching
+			//break;
+			state.setPathFound(true);
+
+		}
+		
+		return state;
+
+	}
+		
+	
 	private static int getUnvisitedNodeNumberWithLowestDistance(double[] distances, 
 			ArrayList<Node> visitedNodes) {
 		
@@ -170,42 +245,10 @@ public class StaticShortestPath {
 
 	}
 
-	/**
-	 * Constructs a path from the startNode to the endNode by traversing
-	 * backwards from endNode, adding each predecessor to the path, then
-	 * returning the reversed version of that path so that the path begins
-	 * with the startNode and ends with the endNode
-	 * @param startNode the origin of the path
-	 * @param endNode the end of the path, with predecessors leading to the
-	 * startNode
-	 * @return a Path object from startNode to endNode
-	 */
-	private static Path getPathToNodeViaPredecessors(Node startNode, Node endNode) {
-
-		Path path = new Path(endNode);
-		
-		Node tempNode = endNode;
-		
-		//while (tempNode.getPredecessor() != null) {
-		while (tempNode.getPredecessor() != null && tempNode != startNode) {
-			
-			path.addNode(tempNode.getPredecessor());
-
-			/* This can be removed if everything is working - I changed the while condition to accomodate
-			if (tempNode.getPredecessor() == startNode) {
-
-				break;
-
-			}*/
-
-			tempNode = tempNode.getPredecessor();
-
-		}
-		
-		path.reverseSequence();
-		
-		return path;
-
+	@Override
+	public AlgorithmState performSingleStep(AlgorithmState priorState) {
+		// TODO Auto-generated method stub
+		return null;
 	}
 
 }
