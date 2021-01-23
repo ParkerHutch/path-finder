@@ -22,6 +22,7 @@ import network.components.Path;
 import java.nio.file.Paths;
 import java.time.Duration;
 import java.time.Instant;
+import java.io.File;
 
 import algorithms.Algorithm;
 import algorithms.AlgorithmState;
@@ -50,8 +51,8 @@ public class GraphicalShortestPath extends Application {
 	
 	Algorithm pathFinder = new DjikstraShortestPath();
 	// TODO Remove beep if I can't figure out
-	AudioClip beep = new AudioClip(Paths.get("beep1.mp3").toUri().toString());
-	
+	// AudioClip beep = new AudioClip(Paths.get("beep1.mp3").toUri().toString());
+	AudioClip beep = new AudioClip(new File("src/main/resources/beep1.mp3").toURI().toString());
 	public static void main(String[] args) {
 		launch(args);
 	}
