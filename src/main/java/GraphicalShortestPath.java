@@ -60,7 +60,7 @@ public class GraphicalShortestPath extends Application {
 	public void init() throws Exception {
 
 		network = new GridNetwork(Color.GRAY, Color.BLACK, 15, 100, 100, 
-				WIDTH - 200, HEIGHT - 200, false);
+				WIDTH - 200, HEIGHT - 200, true);
 		
 	}
 
