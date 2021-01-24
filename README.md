@@ -1,4 +1,4 @@
-# Pathfinder
+# path-finder :detective:
 Finds the shortest path between two points in a grid or a network.
 ![](img/grid-demo.gif) ![](img/web-demo.gif)
 
